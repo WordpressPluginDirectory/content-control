@@ -26,8 +26,8 @@ class RestAPI extends Controller {
 		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 
 		// Handle CPT & Taxonomy that are not registered with the `show_in_rest` arg when searching from our settings pages.
-		add_filter( 'register_post_type_args', [ $this, 'modify_post_type_show_in_rest' ], 10, 2 );
-		add_filter( 'register_taxonomy_args', [ $this, 'modify_taxonomy_show_in_rest' ], 10, 2 );
+		add_filter( 'register_post_type_args', [ $this, 'modify_post_type_show_in_rest' ], 10 );
+		add_filter( 'register_taxonomy_args', [ $this, 'modify_taxonomy_show_in_rest' ], 10 );
 	}
 
 	/**
@@ -84,8 +84,10 @@ class RestAPI extends Controller {
 			return $args;
 		}
 
+		$is_public = isset( $args['public'] ) && $args['public'];
+
 		// Check if this is a private taxonomy.
-		if ( true !== $args['public'] ) {
+		if ( ! $is_public ) {
 			if ( $include_private ) {
 				$args['show_in_rest'] = true; // Enable REST API.
 			}

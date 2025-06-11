@@ -101,7 +101,7 @@ class Rules {
 	 * @return boolean
 	 */
 	public function is_rule_valid( $rule ) {
-		return is_array( $rule ) && ! empty( $rule );
+		return ! empty( $rule );
 	}
 
 	/**
@@ -474,6 +474,17 @@ class Rules {
 				] );
 			}
 
+			/**
+			 * Allow filtering post type rules.
+			 *
+			 * @param array<string,array<string,mixed>> $type_rules Post type rules.
+			 * @param string $name Post type name.
+			 * @param \WP_Post_Type $post_type Post type object.
+			 *
+			 * @return array<string,array<string,mixed>>
+			 */
+			$type_rules = apply_filters( 'content_control/rule_engine/post_type_rules', $type_rules, $name, $post_type );
+
 			// Merge type rules & type tax rules.
 			$rules = array_merge( $rules, $type_rules, $this->get_post_type_tax_rules( $name ) );
 		}
@@ -540,6 +551,16 @@ class Rules {
 				'callback' => '\ContentControl\Rules\content_is_post_with_tax_term',
 			];
 		}
+
+		/**
+		 * Allow filtering post type taxonomy rules.
+		 *
+		 * @param array<string,array<string,mixed>> $rules Post type taxonomy rules.
+		 * @param string $name Post type name.
+		 *
+		 * @return array<string,array<string,mixed>>
+		 */
+		$rules = apply_filters( 'content_control/rule_engine/post_type_tax_rules', $rules, $name );
 
 		return $rules;
 	}

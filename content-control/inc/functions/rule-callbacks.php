@@ -102,11 +102,9 @@ function content_is_home_page() {
 		case 'restapi':
 		case 'restapi/terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	// Catch all unknown contexts.
-	return false;
 }
 
 /**
@@ -147,10 +145,9 @@ function content_is_blog_index() {
 		case 'restapi/terms':
 		case 'terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	return false;
 }
 
 /**
@@ -206,10 +203,9 @@ function content_is_post_type_archive() {
 		case 'restapi/terms':
 		case 'terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	return false;
 }
 
 /**
@@ -265,10 +261,9 @@ function content_is_post_type() {
 		case 'restapi/terms':
 		case 'terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	return false;
 }
 
 /**
@@ -328,10 +323,9 @@ function content_is_selected_post() {
 		case 'restapi/terms':
 		case 'terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	return false;
 }
 
 /**
@@ -707,10 +701,9 @@ function content_is_taxonomy_archive() {
 		// Catch all known contexts.
 		case 'terms':
 		case 'unknown':
+		default:
 			return false;
 	}
-
-	return false;
 }
 
 /**
@@ -849,12 +842,20 @@ function rest_intent_matches_post_type( $post_type, $rest_intent = null ) {
 
 	// Fill in defaults to prevent errors.
 	wp_parse_args( $rest_intent, [
-		'type' => '',
-		'name' => '',
+		'type'   => '',
+		'name'   => '',
+		'search' => false,
 	] );
 
 	// Check if this is a post type intent.
 	if ( 'post_type' !== $rest_intent['type'] ) {
+
+		// If this is a search request, we need to check if the post type is public and searchable.
+		if ( false !== $rest_intent['search'] ) {
+			$post_type_object = get_post_type_object( $post_type );
+			return $post_type_object && $post_type_object->show_in_rest && $post_type_object->publicly_queryable;
+		}
+
 		return false;
 	}
 
@@ -884,12 +885,20 @@ function rest_intent_matches_taxonomy( $taxonomy, $rest_intent = null ) {
 
 	// Fill in defaults to prevent errors.
 	wp_parse_args( $rest_intent, [
-		'type' => '',
-		'name' => '',
+		'type'   => '',
+		'name'   => '',
+		'search' => false,
 	] );
 
 	// Check if this is a taxonomy intent.
 	if ( 'taxonomy' !== $rest_intent['type'] ) {
+
+		// If this is a search request, we need to check if the taxonomy is public and searchable.
+		if ( false !== $rest_intent['search'] ) {
+			$taxonomy_object = get_taxonomy( $taxonomy );
+			return $taxonomy_object && $taxonomy_object->show_in_rest && $taxonomy_object->publicly_queryable;
+		}
+
 		return false;
 	}
 
@@ -897,7 +906,7 @@ function rest_intent_matches_taxonomy( $taxonomy, $rest_intent = null ) {
 
 	// Check that rest_base or selected name match.
 	return // Check the rest_base for the selected taxonomy matches the intent.
-		check_type_match( $taxonomy_object->rest_base, $rest_intent['name'] ) ||
+			check_type_match( $taxonomy_object->rest_base, $rest_intent['name'] ) ||
 		// Check the taxonomy matches the intent.
 		check_type_match( $taxonomy, $rest_intent['name'] );
 }
